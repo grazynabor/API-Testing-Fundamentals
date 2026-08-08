@@ -48,11 +48,15 @@ jobs:
           REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
         run: npm run test:api
 
-      - name: Upload JUnit report
+      - name: Publish test summary and HTML report
+        if: always()
+        run: node scripts/generate-test-summary.mjs
+
+      - name: Upload Newman test reports
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: newman-junit-report
-          path: reports/newman-results.xml
+          name: newman-test-reports
+          path: reports/
           if-no-files-found: warn
           retention-days: 14
