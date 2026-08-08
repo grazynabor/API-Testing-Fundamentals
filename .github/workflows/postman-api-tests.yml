@@ -1,0 +1,58 @@
+name: Postman API tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: postman-api-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  newman:
+    name: Run Newman tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Repository secrets are not available to pull requests from forks.
+    # The API job therefore runs for same-repository PRs and manual runs.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Validate Postman files
+        run: npm run validate:postman
+
+      - name: Verify ReqRes API key secret
+        shell: bash
+        env:
+          REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
+        run: |
+          if [ -z "${REQRES_API_KEY:-}" ]; then
+            echo "::error title=Missing repository secret::Add REQRES_API_KEY under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - name: Run Assignment 1 API tests
+        env:
+          REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
+        run: npm run test:api
+
+      - name: Upload JUnit report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: newman-junit-report
+          path: reports/newman-results.xml
+          if-no-files-found: warn
+          retention-days: 14

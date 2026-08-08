@@ -1,0 +1,18 @@
+# Newman output
+reports/
+newman/
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Local secrets and overrides
+.env
+.env.*
+*.local
+
+# IDE and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

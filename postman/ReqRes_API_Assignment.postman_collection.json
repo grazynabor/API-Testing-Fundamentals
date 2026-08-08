@@ -1,0 +1,713 @@
+{
+  "info": {
+    "_postman_id": "869db749-9bba-4f96-857c-5b9efc4adabe",
+    "name": "ReqRes API - QA Assignment (Assignments 1 & 2) - Corrected",
+    "description": "Ready-to-run Postman collection for the ReqRes QA assignment.\n\nSETUP:\n1. Import this collection and the supplied environment file.\n2. Select environment: 'ReqRes API Assignment'.\n3. Replace PASTE_YOUR_REQRES_API_KEY_HERE in the apiKey variable with your ReqRes API key.\n4. Run individual requests or use Collection Runner.\n\nAssignment 1 contains 5 happy-path and 4 non-2xx test cases with strengthened automated contract assertions, including field types, ISO 8601 timestamps, validation of every returned user object, and exact empty-object checks for 404 responses.\nAssignment 2 contains R1-R5 exploratory requests. Their actual statuses and raw bodies are automatically saved to environment variables for documentation.\n\nCurrent ReqRes /api/* endpoints require x-api-key.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Assignment 1 - Test Cases for a Real Endpoint",
+      "description": "9 test cases required by the assignment. Happy-path requests contain automated assertions for expected HTTP status and key response fields. Negative tests verify non-2xx behavior.",
+      "item": [
+        {
+          "name": "Happy Path (5 required)",
+          "item": [
+            {
+              "name": "TC1 - GET paginated list of users",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/users?page=2",
+                "description": "Expected: 200 OK. Verifies pagination field types and validates the contract of every user object in the returned data array."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                      "pm.test(\"Response is JSON\", function () { pm.response.to.be.json; });",
+                      "const json = pm.response.json();",
+                      "",
+                      "pm.test(\"Requested page is 2\", function () {",
+                      "    pm.expect(json.page).to.eql(2);",
+                      "});",
+                      "",
+                      "pm.test(\"Pagination fields follow the contract\", function () {",
+                      "    [\"page\", \"per_page\", \"total\", \"total_pages\"].forEach(function (key) {",
+                      "        pm.expect(json).to.have.property(key);",
+                      "        pm.expect(json[key]).to.be.a(\"number\");",
+                      "    });",
+                      "    pm.expect(json.data).to.be.an(\"array\");",
+                      "});",
+                      "",
+                      "pm.test(\"Every user object follows the contract\", function () {",
+                      "    json.data.forEach(function (user, index) {",
+                      "        pm.expect(user, \"data[\" + index + \"] should be an object\").to.be.an(\"object\");",
+                      "        pm.expect(user.id, \"data[\" + index + \"].id\").to.be.a(\"number\");",
+                      "        pm.expect(user.email, \"data[\" + index + \"].email\").to.be.a(\"string\").and.not.empty;",
+                      "        pm.expect(user.first_name, \"data[\" + index + \"].first_name\").to.be.a(\"string\").and.not.empty;",
+                      "        pm.expect(user.last_name, \"data[\" + index + \"].last_name\").to.be.a(\"string\").and.not.empty;",
+                      "        pm.expect(user.avatar, \"data[\" + index + \"].avatar\").to.be.a(\"string\").and.not.empty;",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ]
+            },
+            {
+              "name": "TC2 - GET single user by valid ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/users/2",
+                "description": "Expected: 200 OK. Verifies user ID 2 and validates the data types of all required user fields."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                      "pm.test(\"Response is JSON\", function () { pm.response.to.be.json; });",
+                      "const json = pm.response.json();",
+                      "",
+                      "pm.test(\"data object exists\", function () {",
+                      "    pm.expect(json.data).to.be.an(\"object\");",
+                      "});",
+                      "",
+                      "pm.test(\"Returned user follows the contract\", function () {",
+                      "    const user = json.data;",
+                      "    pm.expect(user.id).to.be.a(\"number\").and.eql(2);",
+                      "    pm.expect(user.email).to.be.a(\"string\").and.not.empty;",
+                      "    pm.expect(user.first_name).to.be.a(\"string\").and.not.empty;",
+                      "    pm.expect(user.last_name).to.be.a(\"string\").and.not.empty;",
+                      "    pm.expect(user.avatar).to.be.a(\"string\").and.not.empty;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ]
+            },
+            {
+              "name": "TC3 - POST create a new user",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/users",
+                "description": "Expected: 201 Created. Verifies echoed request fields, generated string id, and a valid ISO 8601 createdAt timestamp.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Jan Kowalski\",\n  \"job\": \"QA Engineer\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                      "pm.test(\"Response is JSON\", function () { pm.response.to.be.json; });",
+                      "const json = pm.response.json();",
+                      "",
+                      "pm.test(\"Submitted fields are echoed\", function () {",
+                      "    pm.expect(json.name).to.be.a(\"string\").and.eql(\"Jan Kowalski\");",
+                      "    pm.expect(json.job).to.be.a(\"string\").and.eql(\"QA Engineer\");",
+                      "});",
+                      "",
+                      "pm.test(\"Generated id is a non-empty string\", function () {",
+                      "    pm.expect(json.id).to.be.a(\"string\").and.not.empty;",
+                      "});",
+                      "",
+                      "pm.test(\"createdAt is a valid ISO 8601 timestamp\", function () {",
+                      "    pm.expect(json.createdAt).to.be.a(\"string\").and.not.empty;",
+                      "    pm.expect(Number.isNaN(Date.parse(json.createdAt))).to.eql(false);",
+                      "    pm.expect(json.createdAt).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$/);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ]
+            },
+            {
+              "name": "TC4 - PUT fully update an existing user",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/users/2",
+                "description": "Expected: 200 OK. Verifies echoed updated fields and a valid ISO 8601 updatedAt timestamp.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Jan Kowalski\",\n  \"job\": \"Senior QA Engineer\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                      "pm.test(\"Response is JSON\", function () { pm.response.to.be.json; });",
+                      "const json = pm.response.json();",
+                      "",
+                      "pm.test(\"Updated fields are echoed\", function () {",
+                      "    pm.expect(json.name).to.be.a(\"string\").and.eql(\"Jan Kowalski\");",
+                      "    pm.expect(json.job).to.be.a(\"string\").and.eql(\"Senior QA Engineer\");",
+                      "});",
+                      "",
+                      "pm.test(\"updatedAt is a valid ISO 8601 timestamp\", function () {",
+                      "    pm.expect(json.updatedAt).to.be.a(\"string\").and.not.empty;",
+                      "    pm.expect(Number.isNaN(Date.parse(json.updatedAt))).to.eql(false);",
+                      "    pm.expect(json.updatedAt).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$/);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ]
+            },
+            {
+              "name": "TC5 - DELETE existing user",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/users/2",
+                "description": "Expected: 204 No Content with an empty response body."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });",
+                      "pm.test(\"Response body is empty\", function () {",
+                      "    pm.expect(pm.response.text()).to.eql(\"\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Negative / Non-2xx (4 required)",
+          "item": [
+            {
+              "name": "TC6 - GET non-existing user",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/users/99999",
+                "description": "Expected: 404 Not Found. Verifies that the response body is exactly an empty JSON object {}."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+                      "pm.test(\"Response is JSON\", function () { pm.response.to.be.json; });",
+                      "const json = pm.response.json();",
+                      "",
+                      "pm.test(\"Response body is exactly an empty JSON object\", function () {",
+                      "    pm.expect(json).to.be.an(\"object\");",
+                      "    pm.expect(Object.keys(json)).to.have.lengthOf(0);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ]
+            },
+            {
+              "name": "TC7 - GET non-existing unknown resource",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/unknown/99999",
+                "description": "Expected: 404 Not Found. Verifies that the response body is exactly an empty JSON object {}."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+                      "pm.test(\"Response is JSON\", function () { pm.response.to.be.json; });",
+                      "const json = pm.response.json();",
+                      "",
+                      "pm.test(\"Response body is exactly an empty JSON object\", function () {",
+                      "    pm.expect(json).to.be.an(\"object\");",
+                      "    pm.expect(Object.keys(json)).to.have.lengthOf(0);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ]
+            },
+            {
+              "name": "TC8 - POST login without password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/login",
+                "description": "Expected: 400 Bad Request. Required password field is omitted. Verifies that error is a non-empty string and token is absent.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"george.bluth@reqres.in\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+                      "pm.test(\"Response is JSON\", function () { pm.response.to.be.json; });",
+                      "const json = pm.response.json();",
+                      "",
+                      "pm.test(\"Response contains a non-empty error string and no token\", function () {",
+                      "    pm.expect(json.error).to.be.a(\"string\").and.not.empty;",
+                      "    pm.expect(json).to.not.have.property(\"token\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ]
+            },
+            {
+              "name": "TC9 - POST register without email",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/register",
+                "description": "Expected: 400 Bad Request. Required email field is omitted. Verifies that error is a non-empty string and token is absent.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"password\": \"Test123!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+                      "pm.test(\"Response is JSON\", function () { pm.response.to.be.json; });",
+                      "const json = pm.response.json();",
+                      "",
+                      "pm.test(\"Response contains a non-empty error string and no token\", function () {",
+                      "    pm.expect(json.error).to.be.a(\"string\").and.not.empty;",
+                      "    pm.expect(json).to.not.have.property(\"token\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Assignment 2 - Contract Validation & Exploratory Testing",
+      "description": "Five exploratory/contract-validation requests. Each request automatically stores the actual HTTP status and raw response body in the selected Postman environment (R1_actual_status, R1_actual_response, etc.). Open the Postman Console or inspect environment variables after execution.",
+      "item": [
+        {
+          "name": "R1 - Wrong data type (password as number)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/api/login",
+            "description": "Scenario: Wrong data type. The documented AuthRequest contract defines password as a string, but this request sends a number. Record the actual status/body and assess whether the API validates the type.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"george.bluth@reqres.in\",\n  \"password\": 123456\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"R1_actual_status\", String(pm.response.code));",
+                  "pm.environment.set(\"R1_actual_response\", pm.response.text());",
+                  "console.log(\"R1 Actual HTTP status:\", pm.response.code);",
+                  "console.log(\"R1 Actual response body:\", pm.response.text());",
+                  "pm.test(\"A response was received\", function () { pm.expect(pm.response.code).to.be.a(\"number\"); });"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "R2 - Missing required field (password omitted)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/api/login",
+            "description": "Scenario: Missing required field. Password is required by the AuthRequest schema but is omitted. Record the actual status/body and assess clarity of the validation error.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"george.bluth@reqres.in\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"R2_actual_status\", String(pm.response.code));",
+                  "pm.environment.set(\"R2_actual_response\", pm.response.text());",
+                  "console.log(\"R2 Actual HTTP status:\", pm.response.code);",
+                  "console.log(\"R2 Actual response body:\", pm.response.text());",
+                  "pm.test(\"A response was received\", function () { pm.expect(pm.response.code).to.be.a(\"number\"); });"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "R3 - Invalid resource ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/api/users/99999",
+            "description": "Scenario: Invalid/non-existing resource ID. Target a user that does not exist. The documented contract defines 404 for a missing user; record the actual result."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"R3_actual_status\", String(pm.response.code));",
+                  "pm.environment.set(\"R3_actual_response\", pm.response.text());",
+                  "console.log(\"R3 Actual HTTP status:\", pm.response.code);",
+                  "console.log(\"R3 Actual response body:\", pm.response.text());",
+                  "pm.test(\"A response was received\", function () { pm.expect(pm.response.code).to.be.a(\"number\"); });"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "R4 - Extra / unexpected fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/api/users",
+            "description": "Scenario: Extra/unexpected fields. The legacy mutation request allows additional properties, so observe whether the API accepts, echoes, ignores, or rejects the extra fields.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jan Kowalski\",\n  \"job\": \"QA Engineer\",\n  \"isAdmin\": true,\n  \"unexpectedField\": \"test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"R4_actual_status\", String(pm.response.code));",
+                  "pm.environment.set(\"R4_actual_response\", pm.response.text());",
+                  "console.log(\"R4 Actual HTTP status:\", pm.response.code);",
+                  "console.log(\"R4 Actual response body:\", pm.response.text());",
+                  "pm.test(\"A response was received\", function () { pm.expect(pm.response.code).to.be.a(\"number\"); });"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "R5 - Empty required values",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/api/login",
+            "description": "Scenario: Required fields are present but contain empty strings. Record the actual behavior and evaluate whether validation is sufficiently strict and informative.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"R5_actual_status\", String(pm.response.code));",
+                  "pm.environment.set(\"R5_actual_response\", pm.response.text());",
+                  "console.log(\"R5 Actual HTTP status:\", pm.response.code);",
+                  "console.log(\"R5 Actual response body:\", pm.response.text());",
+                  "pm.test(\"A response was received\", function () { pm.expect(pm.response.code).to.be.a(\"number\"); });"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
