@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { join } from 'node:path';
 
 const apiKey = process.env.REQRES_API_KEY?.trim();
 
@@ -10,10 +11,11 @@ if (!apiKey) {
 
 mkdirSync('reports', { recursive: true });
 
-const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+const newmanCommand = process.platform === 'win32'
+  ? join('node_modules', '.bin', 'newman.cmd')
+  : join('node_modules', '.bin', 'newman');
+
 const args = [
-  '--yes',
-  'newman@6.2.2',
   'run',
   'postman/ReqRes_API_Assignment.postman_collection.json',
   '--environment',
@@ -23,9 +25,13 @@ const args = [
   '--folder',
   'Assignment 1 - Test Cases for a Real Endpoint',
   '--reporters',
-  'cli,junit',
+  'cli,junit,json,html',
   '--reporter-junit-export',
   'reports/newman-results.xml',
+  '--reporter-json-export',
+  'reports/newman-results.json',
+  '--reporter-html-export',
+  'reports/newman-report.html',
   '--bail',
   'failure',
   '--timeout-request',
@@ -36,13 +42,13 @@ const args = [
   'off',
 ];
 
-const result = spawnSync(npxCommand, args, {
+const result = spawnSync(newmanCommand, args, {
   stdio: 'inherit',
   env: process.env,
 });
 
 if (result.error) {
-  console.error('Unable to start Newman.');
+  console.error('Unable to start Newman. Run npm install first.');
   console.error(result.error.message);
   process.exit(1);
 }
