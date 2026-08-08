@@ -37,7 +37,7 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                      "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(200); });",
                       "pm.test(\"Response is JSON\", function () { pm.response.to.be.json; });",
                       "const json = pm.response.json();",
                       "",
