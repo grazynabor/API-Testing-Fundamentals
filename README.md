@@ -84,12 +84,6 @@ Prerequisites:
 - Node.js 22 or newer
 - a ReqRes API key
 
-Install dependencies once:
-
-```bash
-npm install
-```
-
 ### PowerShell
 
 ```powershell
@@ -104,7 +98,7 @@ export REQRES_API_KEY="your-reqres-api-key"
 npm test
 ```
 
-The command validates the Postman JSON files and runs only the automated **Assignment 1** folder. The run generates HTML, JUnit XML and JSON reports under `reports/`.
+The command validates the Postman JSON files and runs only the automated **Assignment 1** folder. Newman is downloaded at the pinned version `6.2.2` through `npx`. The run generates JUnit XML and JSON reports, and the JSON output is converted into a human-readable HTML report under `reports/`.
 
 ## Pull request workflow
 
@@ -117,12 +111,11 @@ The API job performs the following steps:
 
 1. checks out the repository;
 2. sets up Node.js 22;
-3. installs Newman and the HTML reporter;
-4. validates the collection and environment JSON files;
-5. verifies that `REQRES_API_KEY` is configured;
-6. runs Assignment 1 with Newman;
-7. publishes a readable GitHub Actions summary;
-8. uploads HTML, JUnit XML and JSON reports even when a test fails.
+3. validates the collection and environment JSON files;
+4. verifies that `REQRES_API_KEY` is configured;
+5. runs Assignment 1 with Newman;
+6. publishes a readable GitHub Actions summary and generates the HTML report from Newman JSON;
+7. uploads HTML, JUnit XML and JSON reports even when a test fails.
 
 Assignment 2 remains exploratory rather than a merge-blocking test suite because its purpose is to observe and assess actual contract behaviour.
 

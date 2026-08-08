@@ -8,10 +8,6 @@
     "test:api": "node scripts/run-postman-tests.mjs",
     "test": "npm run validate:postman && npm run test:api"
   },
-  "devDependencies": {
-    "newman": "6.2.2",
-    "newman-reporter-html": "1.0.5"
-  },
   "engines": {
     "node": ">=22"
   }

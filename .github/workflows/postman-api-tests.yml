@@ -30,9 +30,6 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install test dependencies
-        run: npm install --no-audit --no-fund
-
       - name: Validate Postman files
         run: npm run validate:postman
 
@@ -51,7 +48,7 @@ jobs:
           REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
         run: npm run test:api
 
-      - name: Publish test summary
+      - name: Publish test summary and HTML report
         if: always()
         run: node scripts/generate-test-summary.mjs
 
