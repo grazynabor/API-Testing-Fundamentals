@@ -3,6 +3,9 @@ name: Postman API tests
 on:
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * *'
+      timezone: 'Europe/Warsaw'
 
 permissions:
   contents: read
@@ -18,8 +21,13 @@ jobs:
     timeout-minutes: 10
 
     # Repository secrets are not available to pull requests from forks.
-    # The API job therefore runs for same-repository PRs and manual runs.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}
+    # Run API tests for same-repository PRs, manual runs and scheduled nightly runs.
+    if: >-
+  ${{
+    github.event_name == 'workflow_dispatch' ||
+    github.event_name == 'schedule' ||
+    github.event.pull_request.head.repo.full_name == github.repository
+  }}
 
     steps:
       - name: Check out repository

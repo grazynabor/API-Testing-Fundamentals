@@ -112,11 +112,12 @@ npm test
 
 The command validates the Postman JSON files and runs only the automated **Assignment 1** folder. Newman is downloaded at the pinned version `6.2.2` through `npx`. The run generates JUnit XML and JSON reports, and the JSON output is converted into a human-readable HTML report under `reports/`.
 
-## Pull request workflow
+## Pull request and scheduled workflow
 
 The workflow is triggered by:
 
 - every pull request;
+- every night at 03:17 Europe/Warsaw;
 - a manual run from the **Actions** tab using `workflow_dispatch`.
 
 The API job performs the following steps:
