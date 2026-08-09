@@ -53,6 +53,18 @@ The pull-request workflow runs the Postman/Newman test suite automatically befor
 
 ![Successful GitHub Actions checks](docs/images/ci-success.png)
 
+## Quality gate
+
+The `main` branch is protected by a GitHub ruleset.
+
+Changes must:
+- be submitted through a pull request;
+- pass the required `Run Newman tests` GitHub Actions check.
+
+A failing API assertion blocks the pull request from being merged.
+
+![Blocked merge after failed API tests](docs/images/ci-failure-blocked.png)
+
 ## Test reporting
 
 Every GitHub Actions run provides three levels of reporting:
