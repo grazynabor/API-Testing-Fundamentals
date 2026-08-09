@@ -23,11 +23,11 @@ jobs:
     # Repository secrets are not available to pull requests from forks.
     # Run API tests for same-repository PRs, manual runs and scheduled nightly runs.
     if: >-
-  ${{
-    github.event_name == 'workflow_dispatch' ||
-    github.event_name == 'schedule' ||
-    github.event.pull_request.head.repo.full_name == github.repository
-  }}
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'schedule' ||
+        github.event.pull_request.head.repo.full_name == github.repository
+      }}
 
     steps:
       - name: Check out repository
